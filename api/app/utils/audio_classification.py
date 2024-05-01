@@ -1,9 +1,9 @@
 import tensorflow as tf
 from keras.preprocessing import image
 import numpy as np
-from audio_segmentation import remove_segments_folder, segment_audio
+from .audio_segmentation import remove_segments_folder, segment_audio
 
-model_path = "../models/"
+model_path = "app/models/"
 def get_note_classes():
     notes_classes = {'1_0': 0,
                      '1_1': 1,
@@ -96,3 +96,6 @@ def predict_from_wav(segments_id, wav_file_path):
          "type": prediction[0],
          "value": prediction[1]
         })
+
+    remove_segments_folder(segments_id)
+    return predictions

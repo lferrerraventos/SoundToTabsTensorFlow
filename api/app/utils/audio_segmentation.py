@@ -4,13 +4,14 @@ import soundfile as sf
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import shutil
 
 def get_segments_folder(segments_id):
     return "segments/" + str(segments_id) + "/";
 
 def remove_segments_folder(segments_id):
     folder = get_segments_folder(segments_id)
-    os.rmdir(folder)
+    shutil.rmtree(folder)
 def create_spectrogram(audio_path, save_path):
     y, sr = librosa.load(audio_path)
     plt.figure(figsize=(3, 3))

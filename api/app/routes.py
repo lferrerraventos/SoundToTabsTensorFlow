@@ -2,10 +2,14 @@ import uuid
 
 from flask import Blueprint, request, jsonify
 from werkzeug.utils import secure_filename
-
-from api.app.utils.audio_classification import predict_from_wav
+import os
+from app.utils import predict_from_wav
 
 main = Blueprint('main', __name__)
+
+ALLOWED_EXTENSIONS = {'wav', 'mp3'}
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @main.route('/upload/transcription', methods=['POST'])
 def upload_file():
@@ -16,10 +20,10 @@ def upload_file():
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
 
-    if file and file.filename.endswith('.wav'):
+    if file and allowed_file(file.filename):
         segments_id = uuid.uuid4()
-        filename = str(segments_id) + ".wav"
-        file_path = f"./uploads/{filename}"
+        filename = str(segments_id) + os.path.splitext(file.filename)[1]
+        file_path = os.path.join("./uploads/", filename)
         file.save(file_path)
 
         predictions = predict_from_wav(segments_id, file_path)
