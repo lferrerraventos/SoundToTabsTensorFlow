@@ -18,6 +18,20 @@ I also included a small Flask api to deploy the models, please refer to the foll
 
 - [SoundToTabs Flask API Example](api/README.md)
 
+## Important
+
+**Note:** Due to the fact that this is an academic research work, the datasets do not cover all the notes and chords from a guitar. 
+
+Regarding notes, it covers all the first 3 frets. 
+
+For the chords, it covers those using the first 4 frets: 
+- A & Amin
+- B & Bmin
+- C
+- D & Dmin
+- E & Emin
+- F
+- G
 
 
 
