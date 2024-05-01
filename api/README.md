@@ -57,7 +57,6 @@ curl -X POST -F 'file=@path_to_your_audio_file.wav' http://localhost:5000/upload
 
 The API will return a JSON response that includes the classification of the audio file. Here is an example of a successful response:
 
-For chords the value is represented using
 
 ```json
 [
