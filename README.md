@@ -1,4 +1,5 @@
 # Sound to Tabs TensorFlow
+Author: **Luis Ferrer Raventos** => [LinkedIn Profile](https://www.linkedin.com/in/luis-ferrer-raventos/)
 
 This project is part of my final assignment for TFG - UOC.
 
@@ -14,9 +15,13 @@ All the [datasets](/datasets) used to train and validate the models are also inc
 
 Hope and Dreamer have been used for the training data, Whimsical was used for the test data.
 
-I also included a small Flask api to deploy the models, please refer to the following readme to set it up:
+I also included a small **Flask API** to deploy the models, please refer to the following readme to set it up:
 
 - [SoundToTabs Flask API Example](api/README.md)
+
+
+Finally, you can find a **Flutter APP** implementation that aims to convert guitar sounds to tabs using the Flask API in the following repository:
+- [SoundToTabs Flutter APP](https://github.com/lferrerraventos/SoundToTabs)
 
 ## Important
 
