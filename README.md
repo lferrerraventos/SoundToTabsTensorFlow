@@ -1,5 +1,5 @@
 # Sound to Tabs TensorFlow
-Author: **Luis Ferrer Raventos** => [LinkedIn Profile](https://www.linkedin.com/in/luis-ferrer-raventos/)
+Author: **Luis Ferrer Raventós** => [LinkedIn Profile](https://www.linkedin.com/in/luis-ferrer-raventos/)
 
 This project is part of my final assignment for TFG - UOC.
 
