@@ -5,8 +5,12 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
+def get_segments_folder(segments_id):
+    return "segments/" + str(segments_id) + "/";
 
-
+def remove_segments_folder(segments_id):
+    folder = get_segments_folder(segments_id)
+    os.rmdir(folder)
 def create_spectrogram(audio_path, save_path):
     y, sr = librosa.load(audio_path)
     plt.figure(figsize=(3, 3))
@@ -20,7 +24,7 @@ def create_spectrogram(audio_path, save_path):
 def segment_audio(segments_id, song_path):
     min_duration = 0.1  # duración mínima en segundos
     min_rms = 0.01  # mínimo RMS para considerar un segmento no silencioso
-    output_folder = "segmentos/" + str(segments_id) + "/"
+    output_folder = get_segments_folder(segments_id)
     y, sr = librosa.load(song_path)
 
     # Detectar segmentos usando silencios
@@ -57,4 +61,4 @@ def segment_audio(segments_id, song_path):
             create_spectrogram(segment_audio_path, segment_save_path)
             file_paths.append(segment_save_path)
 
-    return [segments_id, file_paths]
+    return file_paths
