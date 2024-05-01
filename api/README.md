@@ -1,4 +1,4 @@
-# SoundToTabs Flask API Examples
+# SoundToTabs Flask API Example
 
 This Flask API uses TensorFlow models that have been trained using the [notebooks](/notebooks) provided in this repository
 to facilitate the classification of guitar recordings.
