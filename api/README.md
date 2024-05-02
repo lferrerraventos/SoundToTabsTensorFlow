@@ -59,25 +59,32 @@ The API will return a JSON response that includes the classification of the audi
 
 
 ```json
-[
-  {
-    "type": "chord",
-    "value": "D"
-  },
-   {
-    "type": "chord",
-    "value": "G"
-  },
-   {
-    "type": "note",
-    "value": "1_2"
-  },
+{
+  "segments_id": "4741e100-6c69-4318-82df-49e4bc049c04",
+  "audio_path": "uploads/4741e100-6c69-4318-82df-49e4bc049c04.wav",
+  "predictions": 
+  [
+    {
+      "type": "chord",
+      "value": "D"
+    },
      {
-    "type": "note",
-    "value": "6_0"
-  }
+      "type": "chord",
+      "value": "G"
+    },
+     {
+      "type": "note",
+      "value": "1_2"
+    },
+       {
+      "type": "note",
+      "value": "6_0"
+    }
+    
+  ]
   
-]
+}
+
 ```
 
 

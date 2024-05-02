@@ -28,7 +28,11 @@ def upload_file():
 
         predictions = predict_from_wav(segments_id, file_path)
 
-        return jsonify(predictions)
+        return jsonify({
+            "segments_id": segments_id,
+            "audio_path": file_path,
+            "predictions": predictions
+        })
 
     return jsonify({"error": "Unsupported file type"}), 400
 
