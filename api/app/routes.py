@@ -29,7 +29,7 @@ def upload_file():
     if file and allowed_file(file.filename):
         segments_id = uuid.uuid4()
         filename = str(segments_id) + os.path.splitext(file.filename)[1]
-        file_path = os.path.join("./uploads/", filename)
+        file_path = os.path.join("/uploads/", filename)
         file.save(file_path)
 
         predictions = predict_from_wav(segments_id, file_path)
