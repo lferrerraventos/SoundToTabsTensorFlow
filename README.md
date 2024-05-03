@@ -53,4 +53,4 @@ For the chords, it covers those using the first 4 frets:
 * [Guitar Chords Dataset](https://github.com/lferrerraventos/SoundToTabsTensorFlow/raw/main/datasets/Chords.zip)
 * [Guitar Note vs Chord Light Dataset](https://github.com/lferrerraventos/SoundToTabsTensorFlow/raw/main/datasets/ChordVsNoteLight.zip)
 * [Guitar Note vs Chord Full Dataset](https://github.com/lferrerraventos/SoundToTabsTensorFlow/raw/main/datasets/ChordsVsNotesFull.zip)
-* [Guitar short recorded song](notebooks/datasets/shortguitarsong.mp3)
+* [Guitar short recorded song](datasets/shortguitarsong.mp3)
