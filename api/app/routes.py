@@ -6,15 +6,16 @@ import os
 from app.utils import predict_from_wav
 
 main = Blueprint('main', __name__)
-
+UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'wav', 'mp3'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@main.route('/uploads/<path:filename>')
+@main.route('/uploads/<path:filename>', methods=['GET'])
 def download_file(filename):
-    return send_from_directory('./uploads', filename)
+    location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    return send_from_directory(os.path.join(location, '..', UPLOAD_FOLDER), filename)
 
 @main.route('/upload/transcription', methods=['POST'])
 def upload_file():
