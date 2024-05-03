@@ -1,6 +1,6 @@
 import uuid
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
 import os
 from app.utils import predict_from_wav
@@ -10,6 +10,11 @@ main = Blueprint('main', __name__)
 ALLOWED_EXTENSIONS = {'wav', 'mp3'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@main.route('/uploads/<path:filename>')
+def download_file(filename):
+    return send_from_directory('./uploads', filename)
 
 @main.route('/upload/transcription', methods=['POST'])
 def upload_file():
