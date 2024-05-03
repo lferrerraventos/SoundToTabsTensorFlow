@@ -1,0 +1,13 @@
+services:
+  flask_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./segments:/app/segments
+    environment:
+      - FLASK_ENV=production
+      - FLASK_APP=run.py

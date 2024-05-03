@@ -86,16 +86,25 @@ def predict_chord_or_note(spectrogram):
     return result
 
 
-
 def predict_from_wav(segments_id, wav_file_path):
     segment_files = segment_audio(segments_id, wav_file_path)
     predictions = []
+    last_prediction = None
+
     for spectrogram_path in segment_files:
         prediction = predict_chord_or_note(spectrogram_path)
-        predictions.append({
-         "type": prediction[0],
-         "value": prediction[1]
-        })
+        current_prediction = {
+            "type": prediction[0],
+            "value": prediction[1]
+        }
+
+        # Check if the current prediction is the same as the last one
+        if last_prediction and current_prediction["value"] == last_prediction["value"]:
+            continue  # Skip this prediction if it's the same as the last one
+
+        predictions.append(current_prediction)
+        last_prediction = current_prediction
 
     remove_segments_folder(segments_id)
     return predictions
+

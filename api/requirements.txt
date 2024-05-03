@@ -2,3 +2,5 @@ Flask
 librosa
 soundfile
 tensorflow
+matplotlib
+numpy

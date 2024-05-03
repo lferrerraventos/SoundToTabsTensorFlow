@@ -23,43 +23,44 @@ def create_spectrogram(audio_path, save_path):
     plt.close()
 
 def segment_audio(segments_id, song_path):
-    min_duration = 0.1  # duración mínima en segundos
-    min_rms = 0.01  # mínimo RMS para considerar un segmento no silencioso
     output_folder = get_segments_folder(segments_id)
     y, sr = librosa.load(song_path)
 
-    # Detectar segmentos usando silencios
-    non_mute_sections = librosa.effects.split(y, top_db=35)
+    # Detect silent sections
+    non_mute_sections = librosa.effects.split(y, top_db=25)  # Decrease top_db to consider quieter sounds as silence
 
-    # Detectar onsets
-    onsets = librosa.onset.onset_detect(y=y, sr=sr, units='samples', delta=0.02, post_avg=3, pre_avg=3)
+    # Harmonic content analysis using the chromagram
+    chroma = librosa.feature.chroma_cqt(y=y, sr=sr)
+    chroma_std = np.std(chroma, axis=0)  # Calculate the standard deviation of chroma
 
-    # Combina onsets y segmentos no mudos
-    all_changes = sorted(set(onsets.tolist() + [item for sublist in non_mute_sections for item in sublist]))
+    # Generate potential segment changes
+    changes = []
+    for idx, val in enumerate(chroma_std):
+        if val > np.percentile(chroma_std, 75):  # Use a high percentile to ensure only significant changes are noted
+            changes.append(idx * 512)  # Converting frames to samples
 
-    # Crear segmentos finales
-    refined_segments = []
-    last_pos = all_changes[0]
-    for change in all_changes[1:]:
-        if (change - last_pos) > sr * min_duration:  # Asegurarse de que el segmento tenga una duración mínima
-            refined_segments.append((last_pos, change))
-            last_pos = change
+    # Combine silence boundaries with significant harmonic changes
+    segments = sorted(set(changes + [start for start, end in non_mute_sections]))
 
-    # Filtrar segmentos por energía
-    refined_segments = [(start, end) for start, end in refined_segments if
-                        librosa.feature.rms(y=y[start:end]).max() > min_rms]
+    # Filter segments by minimum duration and minimum RMS
+    final_segments = []
+    min_duration = 0.5  # Increase duration to avoid too short segments
+    min_rms = 0.01
+    last_pos = segments[0]
+    for pos in segments[1:]:
+        if (pos - last_pos) > sr * min_duration and librosa.feature.rms(y=y[last_pos:pos]).max() > min_rms:
+            final_segments.append((last_pos, pos))
+            last_pos = pos
 
-    # Crear y guardar espectrogramas para cada segmento refinado
-    file_paths = []
+    # Create and save spectrograms
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
-    for i, (start, end) in enumerate(refined_segments):
-        segment_save_path = os.path.join(output_folder, f'segment_{i}.png')
+    file_paths = []
+    for i, (start, end) in enumerate(final_segments):
         segment_audio_path = os.path.join(output_folder, f'segment_{i}.wav')
-        segment_data = y[start:end]
-        if np.any(segment_data):
-            sf.write(segment_audio_path, segment_data, sr)
-            create_spectrogram(segment_audio_path, segment_save_path)
-            file_paths.append(segment_save_path)
+        segment_save_path = os.path.join(output_folder, f'segment_{i}.png')
+        sf.write(segment_audio_path, y[start:end], sr)
+        create_spectrogram(segment_audio_path, segment_save_path)
+        file_paths.append(segment_save_path)
 
     return file_paths
