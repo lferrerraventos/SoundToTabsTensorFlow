@@ -22,33 +22,34 @@ def create_spectrogram(audio_path, save_path):
     plt.savefig(save_path, bbox_inches='tight', pad_inches=0)
     plt.close()
 
+
 def segment_audio(segments_id, song_path):
     output_folder = get_segments_folder(segments_id)
     y, sr = librosa.load(song_path)
 
     # Detect silent sections
-    non_mute_sections = librosa.effects.split(y, top_db=25)  # Decrease top_db to consider quieter sounds as silence
+    silences = librosa.effects.split(y, top_db=32)  # lower for more sensitivity
 
-    # Harmonic content analysis using the chromagram
-    chroma = librosa.feature.chroma_cqt(y=y, sr=sr)
-    chroma_std = np.std(chroma, axis=0)  # Calculate the standard deviation of chroma
+    # Detect significant RMS energy changes
+    rms = librosa.feature.rms(y=y)[0]
+    rms_diff = np.diff(rms)
+    significant_energy_changes = np.where(np.abs(rms_diff) > np.percentile(np.abs(rms_diff), 90))[0] * 512
 
-    # Generate potential segment changes
-    changes = []
-    for idx, val in enumerate(chroma_std):
-        if val > np.percentile(chroma_std, 75):  # Use a high percentile to ensure only significant changes are noted
-            changes.append(idx * 512)  # Converting frames to samples
+    # Pitch tracking
+    pitches, magnitudes = librosa.piptrack(y=y, sr=sr)
+    dominant_pitches = [np.max(pitch[np.nonzero(pitch)]) if np.any(pitch) else 0 for pitch in pitches.T]
+    pitch_changes = np.diff(dominant_pitches)
+    significant_pitch_changes = np.where(np.abs(pitch_changes) > np.percentile(np.abs(pitch_changes), 75))[0] * 512
 
-    # Combine silence boundaries with significant harmonic changes
-    segments = sorted(set(changes + [start for start, end in non_mute_sections]))
+    # Combine all segment boundaries
+    segments = sorted(set([s[0] for s in silences] + [s[1] for s in silences] + significant_energy_changes.tolist() + significant_pitch_changes.tolist()))
 
     # Filter segments by minimum duration and minimum RMS
     final_segments = []
-    min_duration = 0.5  # Increase duration to avoid too short segments
-    min_rms = 0.01
+    min_duration = 1.5 # Minimum duration of a segment in seconds
     last_pos = segments[0]
     for pos in segments[1:]:
-        if (pos - last_pos) > sr * min_duration and librosa.feature.rms(y=y[last_pos:pos]).max() > min_rms:
+        if (pos - last_pos) > sr * min_duration and librosa.feature.rms(y=y[last_pos:pos]).max() > 0.01:
             final_segments.append((last_pos, pos))
             last_pos = pos
 
