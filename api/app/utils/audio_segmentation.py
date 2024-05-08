@@ -6,12 +6,16 @@ import os
 import matplotlib.pyplot as plt
 import shutil
 
+
 def get_segments_folder(segments_id):
     return "segments/" + str(segments_id) + "/";
+
 
 def remove_segments_folder(segments_id):
     folder = get_segments_folder(segments_id)
     shutil.rmtree(folder)
+
+
 def create_spectrogram(audio_path, save_path):
     y, sr = librosa.load(audio_path)
     plt.figure(figsize=(3, 3))
@@ -23,45 +27,56 @@ def create_spectrogram(audio_path, save_path):
     plt.close()
 
 
-def segment_audio(segments_id, song_path):
-    output_folder = get_segments_folder(segments_id)
+
+def segment_audio(segment_id, song_path):
+    output_folder = get_segments_folder(segment_id)
     y, sr = librosa.load(song_path)
-
-    # Detect silent sections
-    silences = librosa.effects.split(y, top_db=32)  # lower for more sensitivity
-
-    # Detect significant RMS energy changes
-    rms = librosa.feature.rms(y=y)[0]
-    rms_diff = np.diff(rms)
-    significant_energy_changes = np.where(np.abs(rms_diff) > np.percentile(np.abs(rms_diff), 90))[0] * 512
-
-    # Pitch tracking
-    pitches, magnitudes = librosa.piptrack(y=y, sr=sr)
-    dominant_pitches = [np.max(pitch[np.nonzero(pitch)]) if np.any(pitch) else 0 for pitch in pitches.T]
-    pitch_changes = np.diff(dominant_pitches)
-    significant_pitch_changes = np.where(np.abs(pitch_changes) > np.percentile(np.abs(pitch_changes), 75))[0] * 512
-
-    # Combine all segment boundaries
-    segments = sorted(set([s[0] for s in silences] + [s[1] for s in silences] + significant_energy_changes.tolist() + significant_pitch_changes.tolist()))
-
-    # Filter segments by minimum duration and minimum RMS
-    final_segments = []
-    min_duration = 1.5 # Minimum duration of a segment in seconds
-    last_pos = segments[0]
-    for pos in segments[1:]:
-        if (pos - last_pos) > sr * min_duration and librosa.feature.rms(y=y[last_pos:pos]).max() > 0.01:
-            final_segments.append((last_pos, pos))
-            last_pos = pos
-
-    # Create and save spectrograms
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
+
+    onset_frames = librosa.onset.onset_detect(y=y, sr=sr)
+    min_duration_sec = 0.75
+
+    total_audio_duration = librosa.get_duration(y=y, sr=sr)
     file_paths = []
-    for i, (start, end) in enumerate(final_segments):
-        segment_audio_path = os.path.join(output_folder, f'segment_{i}.wav')
-        segment_save_path = os.path.join(output_folder, f'segment_{i}.png')
-        sf.write(segment_audio_path, y[start:end], sr)
-        create_spectrogram(segment_audio_path, segment_save_path)
-        file_paths.append(segment_save_path)
+    start_frame = 0
+    total_duration_processed = 0
+
+    for onset_frame in onset_frames:
+        start_time = librosa.frames_to_time(start_frame, sr=sr)
+        end_time = librosa.frames_to_time(onset_frame, sr=sr)
+        duration = end_time - start_time
+        total_duration_processed += duration
+        if duration >= min_duration_sec:
+            start_sample = librosa.frames_to_samples(start_frame)
+            end_sample = librosa.frames_to_samples(onset_frame)
+
+            segment_audio_path = os.path.join(output_folder, f'segment_{len(file_paths)}.wav')
+            segment_save_path = os.path.join(output_folder, f'segment_{len(file_paths)}.png')
+            # Write segment audio
+            sf.write(segment_audio_path, y[start_sample:end_sample], sr)
+
+            # Create and save spectrogram
+            create_spectrogram(segment_audio_path, segment_save_path)
+            file_paths.append(segment_save_path)
+
+        # Update start frame for next segment
+        start_frame = onset_frame
+
+    # Handle the last segment if there's remaining audio after the last onset
+    if total_audio_duration > total_duration_processed:
+        end_frame = len(y)  # the end of the audio
+        end_time = librosa.frames_to_time(end_frame, sr=sr)
+        duration = end_time - librosa.frames_to_time(start_frame, sr=sr)
+        if duration >= min_duration_sec:
+            start_sample = librosa.frames_to_samples(start_frame)
+            end_sample = len(y)  # end of the audio data
+            segment_audio_path = os.path.join(output_folder, f'segment_{len(file_paths)}.wav')
+            segment_save_path = os.path.join(output_folder, f'segment_{len(file_paths)}.png')
+            sf.write(segment_audio_path, y[start_sample:end_sample], sr)
+            create_spectrogram(segment_audio_path, segment_save_path)
+            file_paths.append(segment_save_path)
+
 
     return file_paths
+
